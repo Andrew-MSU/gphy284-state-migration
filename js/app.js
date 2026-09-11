@@ -22,10 +22,11 @@
 
   const map = L.map('map', { zoomControl: true, attributionControl: true })
     .setView([39.8, -98.5], 4);
+  // CARTO basemaps require ?key= (not api_key) — see https://carto.com/basemaps/apikey/
   L.tileLayer(
-    `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?api_key=${encodeURIComponent(CARTO_KEY)}`,
+    `https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png?key=${encodeURIComponent(CARTO_KEY)}`,
     {
-      attribution: '&copy; OpenStreetMap &copy; CARTO',
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attributions">CARTO</a>',
       maxZoom: 8,
       subdomains: 'abcd'
     }
