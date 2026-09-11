@@ -1,0 +1,28 @@
+{
+  "title": "US State-to-State Migration Explorer",
+  "vintage": "2024",
+  "dataset": "U.S. Census Bureau State-to-State Migration Flows: 2024 (ACS/PRCS 1-year, residence 1 year ago)",
+  "released": "2026-01-21",
+  "source_url": "https://www.census.gov/data/tables/time-series/demo/geographic-mobility/state-to-state-migration.html",
+  "citation": "U.S. Census Bureau. State-to-State Migration Flows: 2024.",
+  "assigned_states": {
+    "outflow_focus": "Montana",
+    "inflow_focus": "Montana",
+    "compare_a": "California",
+    "compare_b": "Montana",
+    "regional_focus": "Texas"
+  },
+  "warm_states": [
+    "Florida",
+    "Arizona",
+    "California",
+    "Nevada",
+    "New Mexico",
+    "Louisiana",
+    "Georgia",
+    "South Carolina",
+    "Alabama",
+    "Mississippi",
+    "Hawaii"
+  ]
+}
