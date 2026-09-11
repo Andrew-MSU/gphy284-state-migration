@@ -1,8 +1,8 @@
 # GPHY 284 Lab 3 — Part 2 rewrite (migration flows)
 
-**Explorer (live after Pages):** https://andrew-traversemt.github.io/gphy284-state-migration/
-**Repo:** https://github.com/Andrew-TraverseMT/gphy284-state-migration  
-*(Transfer to Andrew-MSU when ready.)*
+**Explorer (live after Pages):** https://andrew-msu.github.io/gphy284-state-migration/
+**Repo:** https://github.com/Andrew-MSU/gphy284-state-migration  
+*(Hosted under Andrew-MSU.)*
 
 **Data:** U.S. Census Bureau *State-to-State Migration Flows: 2024* (ACS/PRCS 1-year, residence 1 year ago). Released Jan 21, 2026.  
 https://www.census.gov/data/tables/time-series/demo/geographic-mobility/state-to-state-migration.html
@@ -14,7 +14,7 @@ Replace the old Minimal Gallery / IRS 2015–16 section with the following.
 ## Part 2 — State-to-state migration flows
 
 Open the **US State-to-State Migration Explorer**:  
-https://andrew-traversemt.github.io/gphy284-state-migration/
+https://andrew-msu.github.io/gphy284-state-migration/
 
 This map shows how many people moved from one U.S. state to another, based on where they lived one year earlier (Census ACS estimates). Flow lines are **schematic** (state centroid to centroid)—they are not actual travel paths. Line thickness scales with the number of movers. Each estimate has a 90% margin of error (MOE).
 
