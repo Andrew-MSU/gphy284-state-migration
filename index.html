@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>US State-to-State Migration Explorer (ACS 2024)</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+  <header class="bar">
+    <div>
+      <h1>US State-to-State Migration Explorer</h1>
+      <p class="sub" id="citation">Census ACS 2024 · residence 1 year ago</p>
+    </div>
+    <div class="controls">
+      <label class="seg">
+        <span>Direction</span>
+        <select id="direction">
+          <option value="out">Outflows (from selected)</option>
+          <option value="in">Inflows (to selected)</option>
+        </select>
+      </label>
+      <label class="seg">
+        <span>Show top</span>
+        <select id="topn">
+          <option value="10">10</option>
+          <option value="15" selected>15</option>
+          <option value="25">25</option>
+          <option value="50">50</option>
+          <option value="0">All</option>
+        </select>
+      </label>
+      <button type="button" id="clearBtn" class="ghost">Clear selection</button>
+    </div>
+  </header>
+  <main class="layout">
+    <section id="map" aria-label="Migration map"></section>
+    <aside class="panel">
+      <h2 id="panelTitle">Click a state</h2>
+      <p id="panelHint">Select a state to draw migration flows. Use the direction control for outflows or inflows.</p>
+      <div id="stats" class="stats hidden"></div>
+      <div class="table-wrap">
+        <table id="rankTable">
+          <thead>
+            <tr><th>#</th><th id="colPartner">Partner</th><th>Movers</th><th>±MOE</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="footnote" id="footnote"></p>
+    </aside>
+  </main>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
