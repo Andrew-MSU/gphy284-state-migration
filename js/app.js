@@ -1,4 +1,5 @@
 (() => {
+  const CARTO_KEY = 'cb1_29or_1_a6d0e4624aabccf32b4e5fb9';
   const CENTROIDS = {
     Alabama:[-86.9023,32.3182],Alaska:[-152.4044,61.3707],Arizona:[-111.4312,33.7298],
     Arkansas:[-92.3731,34.9697],California:[-119.6816,36.1162],Colorado:[-105.3111,39.0598],
@@ -21,10 +22,14 @@
 
   const map = L.map('map', { zoomControl: true, attributionControl: true })
     .setView([39.8, -98.5], 4);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; OpenStreetMap &copy; CARTO',
-    maxZoom: 8
-  }).addTo(map);
+  L.tileLayer(
+    `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?api_key=${encodeURIComponent(CARTO_KEY)}`,
+    {
+      attribution: '&copy; OpenStreetMap &copy; CARTO',
+      maxZoom: 8,
+      subdomains: 'abcd'
+    }
+  ).addTo(map);
 
   let flows = [];
   let meta = {};
@@ -71,6 +76,13 @@
     return rows;
   }
 
+  function flowPopupHtml(f, rank) {
+    return `<strong>${f.o} → ${f.d}</strong><br>` +
+      `Movers: <strong>${fmt(f.n)}</strong>` +
+      (f.m != null ? `<br>±MOE (90%): ${fmt(f.m)}` : '') +
+      (rank != null ? `<br>Rank #${rank} for ${selected}` : '');
+  }
+
   function drawFlows() {
     flowLayer.clearLayers();
     const rows = filteredFlows();
@@ -83,19 +95,19 @@
       const t = Math.max(0.15, f.n / maxN);
       const weight = 1 + t * 7;
       const isHi = highlightFlow && highlightFlow.o === f.o && highlightFlow.d === f.d;
-      const line = L.polyline([[from[1], from[0]], [to[1], to[0]]], {
+      const latlngs = [[from[1], from[0]], [to[1], to[0]]];
+      const line = L.polyline(latlngs, {
         color: isHi ? '#f472b6' : '#f59e0b',
         weight: isHi ? weight + 1.5 : weight,
-        opacity: isHi ? 0.95 : 0.35 + t * 0.55,
+        opacity: isHi ? 0.95 : 0.4 + t * 0.5,
         lineCap: 'round'
       });
       const partner = el.direction.value === 'out' ? f.d : f.o;
-      line.bindPopup(
-        `<strong>${f.o} → ${f.d}</strong><br>` +
-        `Movers: <strong>${fmt(f.n)}</strong>` +
-        (f.m != null ? `<br>±MOE (90%): ${fmt(f.m)}` : '') +
-        `<br><span style="opacity:.8">Rank #${idx + 1} for ${selected} (${el.direction.value})</span>`
+      line.bindTooltip(
+        `${partner}: ${fmt(f.n)} movers`,
+        { sticky: true, direction: 'top', opacity: 0.95, className: 'state-tip' }
       );
+      line.bindPopup(flowPopupHtml(f, idx + 1));
       line.on('click', () => {
         highlightFlow = f;
         renderTable(rows);
@@ -103,30 +115,55 @@
         line.openPopup();
       });
       line.addTo(flowLayer);
+
+      // Number badge on top 8 flows so mobile users see counts without opening the table
+      if (idx < 8) {
+        const mid = [(from[1] + to[1]) / 2, (from[0] + to[0]) / 2];
+        const marker = L.marker(mid, {
+          interactive: false,
+          icon: L.divIcon({
+            className: '',
+            html: `<div class="flow-label">${partner}: ${fmt(f.n)}</div>`,
+            iconSize: null
+          })
+        });
+        marker.addTo(flowLayer);
+      }
     });
   }
 
   function renderTable(rows) {
     el.colPartner.textContent = el.direction.value === 'out' ? 'Destination' : 'Origin';
     el.rankBody.innerHTML = '';
+    if (!rows.length) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td colspan="4" style="color:#9ca3af">No flows for this selection.</td>`;
+      el.rankBody.appendChild(tr);
+      return;
+    }
     rows.forEach((f, i) => {
       const partner = el.direction.value === 'out' ? f.d : f.o;
       const tr = document.createElement('tr');
       if (highlightFlow && highlightFlow.o === f.o && highlightFlow.d === f.d) tr.classList.add('active');
-      tr.innerHTML = `<td>${i + 1}</td><td>${partner}</td><td class="num">${fmt(f.n)}</td><td class="num">${f.m == null ? '—' : fmt(f.m)}</td>`;
+      tr.innerHTML =
+        `<td>${i + 1}</td>` +
+        `<td>${partner}</td>` +
+        `<td class="num"><strong>${fmt(f.n)}</strong></td>` +
+        `<td class="num">${f.m == null ? '—' : '±' + fmt(f.m)}</td>`;
       tr.addEventListener('click', () => {
         highlightFlow = f;
         renderTable(rows);
         drawFlows();
-        // open matching popup roughly at midpoint
         const from = CENTROIDS[f.o];
         const to = CENTROIDS[f.d];
         if (from && to) {
           L.popup()
             .setLatLng([(from[1] + to[1]) / 2, (from[0] + to[0]) / 2])
-            .setContent(`<strong>${f.o} → ${f.d}</strong><br>Movers: <strong>${fmt(f.n)}</strong>${f.m != null ? `<br>±MOE: ${fmt(f.m)}` : ''}`)
+            .setContent(flowPopupHtml(f, i + 1))
             .openOn(map);
         }
+        // Keep table in view on mobile
+        tr.scrollIntoView({ block: 'nearest' });
       });
       el.rankBody.appendChild(tr);
     });
@@ -135,7 +172,7 @@
   function updatePanel() {
     if (!selected) {
       el.panelTitle.textContent = 'Click a state';
-      el.panelHint.textContent = 'Select a state to draw migration flows. Toggle Outflows / Inflows above.';
+      el.panelHint.textContent = 'Select a state to list top destinations/sources with mover counts. Scroll this panel on phones to see the full table.';
       el.stats.classList.add('hidden');
       el.rankBody.innerHTML = '';
       flowLayer.clearLayers();
@@ -146,16 +183,20 @@
       .sort((a, b) => b.n - a.n);
     const shown = filteredFlows();
     const total = all.reduce((s, f) => s + f.n, 0);
-    el.panelTitle.textContent = selected;
+    el.panelTitle.textContent = `${selected} — ${dir === 'out' ? 'outflows' : 'inflows'}`;
     el.panelHint.textContent = dir === 'out'
-      ? `Outflows from ${selected} to other states (ACS 2024).`
-      : `Inflows to ${selected} from other states (ACS 2024).`;
+      ? `Top destinations from ${selected} (ACS 2024). Counts are in the table and on map labels.`
+      : `Top sources into ${selected} (ACS 2024). Counts are in the table and on map labels.`;
     el.stats.classList.remove('hidden');
     el.stats.innerHTML = `
       <div><div class="k">Total ${dir === 'out' ? 'out-movers' : 'in-movers'}</div><div class="v">${fmt(total)}</div></div>
-      <div><div class="k">OD pairs</div><div class="v">${fmt(all.length)}</div></div>`;
+      <div><div class="k">Showing</div><div class="v">${fmt(shown.length)} of ${fmt(all.length)}</div></div>`;
     renderTable(shown);
     drawFlows();
+    // On mobile, nudge panel into view after select
+    if (window.matchMedia('(max-width: 900px)').matches) {
+      document.querySelector('.panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   function selectState(name) {
@@ -181,8 +222,8 @@
   ]).then(([flowData, metaData, states]) => {
     flows = flowData;
     meta = metaData;
-    el.citation.textContent = `${meta.dataset || 'Census ACS'} · ${meta.source_url || ''}`;
-    el.footnote.textContent = `${meta.citation || ''} Estimates include 90% margins of error. Same-state moves are excluded. Lines are schematic (centroid to centroid), not travel paths.`;
+    el.citation.textContent = `${meta.vintage || '2024'} ACS state-to-state · Census Bureau`;
+    el.footnote.textContent = `${meta.citation || ''} Lines are schematic (centroid→centroid), not travel paths. MOE = 90% margin of error.`;
 
     statesLayer = L.geoJSON(states, {
       style: stateStyle,
@@ -197,14 +238,9 @@
           mouseout: e => e.target.setStyle(stateStyle(feature)),
           click: () => selectState(name)
         });
-        layer.bindTooltip(name, { sticky: true, direction: 'center', className: 'state-label' });
+        layer.bindTooltip(name, { sticky: true, direction: 'top', className: 'state-tip' });
       }
     }).addTo(map);
-
-    // Instructor-assigned starting example from meta (Montana) — optional focus without "lab mode"
-    if (meta.assigned_states && meta.assigned_states.outflow_focus) {
-      // Don't auto-select; leave blank for discovery. Lab PDF will assign Montana/Texas.
-    }
   }).catch(err => {
     el.panelHint.textContent = 'Failed to load data: ' + err;
   });
