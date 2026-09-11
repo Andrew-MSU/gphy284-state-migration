@@ -1,5 +1,4 @@
 (() => {
-  const CARTO_KEY = 'cb1_29or_1_a6d0e4624aabccf32b4e5fb9';
   const CENTROIDS = {
     Alabama:[-86.9023,32.3182],Alaska:[-152.4044,61.3707],Arizona:[-111.4312,33.7298],
     Arkansas:[-92.3731,34.9697],California:[-119.6816,36.1162],Colorado:[-105.3111,39.0598],
@@ -22,13 +21,12 @@
 
   const map = L.map('map', { zoomControl: true, attributionControl: true })
     .setView([39.8, -98.5], 4);
-  // CARTO basemaps require ?key= (not api_key) — see https://carto.com/basemaps/apikey/
+  // Esri Canvas Dark Gray — public tiles, no API key
   L.tileLayer(
-    `https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png?key=${encodeURIComponent(CARTO_KEY)}`,
+    'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
     {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      maxZoom: 8,
-      subdomains: 'abcd'
+      attribution: 'Tiles &copy; Esri — Esri, HERE, Garmin, FAO, NOAA, USGS',
+      maxZoom: 8
     }
   ).addTo(map);
 
